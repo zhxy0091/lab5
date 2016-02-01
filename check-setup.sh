@@ -70,13 +70,7 @@ then
   if [ "$mongo_missing" == "1" ]
   then
     echo "Installing MongoDB..."
-    mongo_res=$(
-    mkdir -p /data/db;
-    chown vagrant /data/db;
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10;
-    echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list;
-    apt-get update;
-    apt-get install -y mongodb-10gen;)
+    mongo_res=$(/home/vagrant/introHCI/mongo.sh)
 
     mongo_loc=$(which mongo)
     if [ "${#mongo_loc}" == "0" ]
@@ -90,7 +84,7 @@ then
   if [ "$heroku_missing" == "1" ]
   then
     heroku_res=$(echo "Installing Heroku Toolbelt...";
-    wget -qO- https://toolbelt.heroku.com/install-ubuntu.sh | sh)
+    /home/vagrant/introHCI/heroku.sh)
     heroku_loc=$(which heroku)
     if [ "${#heroku_loc}" == "0" ]
     then
@@ -103,7 +97,7 @@ then
   if [ "$node_missing" == "1" ]
   then
     echo "Installing nodejs"    
-    node_res=$(apt-get -y install nodejs)
+    node_res=$(/home/vagrant/introHCI/nodejs.sh)
     node_loc=$(which node)
     if [ "${#node_loc}" == "0" ]
     then
@@ -116,7 +110,7 @@ then
   if [ "$npm_missing" == "1" ]
   then
     echo "Installing npm"  
-    npm_res=$(apt-get -y install npm)
+    npm_res=$(/home/vagrant/introHCI/nodejs.sh)
     npm_loc=$(which npm)
     if [ "${#npm_loc}" == "0" ]
     then
@@ -133,6 +127,7 @@ then
   then
     echo "FAIL: Node is missing packages"
     echo "Attempting to repair."
+    /home/vagrant/introHCI/npm.sh
     install_status=$(cd lab4; npm -y install --no-bin-links)
 
     node_status=$(cd lab4;npm ls 2>&1)
