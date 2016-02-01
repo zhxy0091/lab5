@@ -11,22 +11,22 @@ heroku_missing="0"
 npm_missing="0"
 
 # set this to the number of the current lab
-cur_lab=4
+cur_lab=5
 
-system=$(uname -a)
-if [ "$system" == "Linux precise32 3.2.0-23-generic-pae #36-Ubuntu SMP Tue Apr 10 22:19:09 UTC 2012 i686 i686 i386 GNU/Linux" ]
+system=$(uname -a | cut -d' ' -f1,2)
+if [ "$system" == "Linux precise32" ] || [ "$system" == "Linux vagrant-ubuntu-trusty-64" ]
 then
   sys_vagrant="1"  
   echo "Running on Vagrant guest"
-  
+
   user=$(whoami)
-  
+
   if [ "$user" != "root" ]
   then
-	echo "ERROR: You must run this script with sudo"
-	exit
+    echo "ERROR: You must run this script with sudo"
+    exit
   fi
-  
+
 elif [ $short_system == "Darwin"  ]
 then
   sys_osx="1"
@@ -51,79 +51,73 @@ then
     then
       echo "You don't have $i"
       all_present="0"
-	  if [ "$i" == "mongo" ]
-	  then
-		mongo_missing="1"
-	  elif [ "$i" == "heroku" ]
-	  then
-		heroku_missing="1"
-	  elif [ "$i" == "node" ]
-	  then
-		node_missing="1"
-	  elif [ "$i" == "npm" ]
-	  then
-		npm_missing="1"
-	  fi
+      if [ "$i" == "mongo" ]
+      then
+        mongo_missing="1"
+      elif [ "$i" == "heroku" ]
+      then
+        heroku_missing="1"
+      elif [ "$i" == "node" ]
+      then
+        node_missing="1"
+      elif [ "$i" == "npm" ]
+      then
+        npm_missing="1"
+      fi
     fi
   done
-  
+
   if [ "$mongo_missing" == "1" ]
   then
-	echo "Installing MongoDB..."
-	mongo_res=$(
-	mkdir -p /data/db;
-	chown vagrant /data/db;
-	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10;
-	echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list;
-	apt-get update;
-	apt-get install -y mongodb-10gen;)
-	
-	mongo_loc=$(which mongo)
-	if [ "${#mongo_loc}" == "0" ]
-	then
-		echo "Auto install failed."
-	else
-		echo "Auto install succeeded"
-	fi
+    echo "Installing MongoDB..."
+    mongo_res=$(/home/vagrant/introHCI/mongo.sh)
+
+    mongo_loc=$(which mongo)
+    if [ "${#mongo_loc}" == "0" ]
+    then
+        echo "Auto install failed."
+    else
+        echo "Auto install succeeded"
+    fi
   fi
-  
+
   if [ "$heroku_missing" == "1" ]
   then
-	heroku_res=$(echo "Installing Heroku Toolbelt...";
-	wget -qO- https://toolbelt.heroku.com/install-ubuntu.sh | sh)
-	heroku_loc=$(which heroku)
-	if [ "${#heroku_loc}" == "0" ]
-	then
-		echo "Auto install failed."
-	else
-		echo "Auto install succeeded"
-	fi
+    heroku_res=$(echo "Installing Heroku Toolbelt...";
+    /home/vagrant/introHCI/heroku.sh)
+    heroku_loc=$(which heroku)
+    if [ "${#heroku_loc}" == "0" ]
+    then
+        echo "Auto install failed."
+    else
+        echo "Auto install succeeded"
+    fi
   fi
-  
+
   if [ "$node_missing" == "1" ]
   then
     echo "Installing nodejs"    
-	node_res=$(apt-get -y install nodejs)
-	node_loc=$(which node)
-	if [ "${#node_loc}" == "0" ]
-	then
-		echo "Auto install failed."
-	else
-		echo "Auto install succeeded"
-	fi
+    node_res=$(/home/vagrant/introHCI/nodejs.sh)
+    node_loc=$(which node)
+    if [ "${#node_loc}" == "0" ]
+    then
+        echo "Auto install failed."
+    else
+        echo "Auto install succeeded"
+    fi
   fi
-  
+
   if [ "$npm_missing" == "1" ]
   then
     echo "Installing npm"  
-	npm_res=$(apt-get -y install npm)
-	npm_loc=$(which npm)
-	if [ "${#npm_loc}" == "0" ]
-	then
-		echo "Auto install failed."
-	else
-		echo "Auto install succeeded"
-	fi
+    npm_res=$(/home/vagrant/introHCI/nodejs.sh)
+    npm_loc=$(which npm)
+    if [ "${#npm_loc}" == "0" ]
+    then
+        echo "Auto install failed."
+    else
+        echo "Auto install succeeded"
+    fi
   fi
 
   # current lab hardcoded
@@ -133,10 +127,11 @@ then
   then
     echo "FAIL: Node is missing packages"
     echo "Attempting to repair."
+    /home/vagrant/introHCI/npm.sh
     install_status=$(cd lab4; npm -y install --no-bin-links)
 
     node_status=$(cd lab4;npm ls 2>&1)
-  
+
     if [[ $node_status != *"UNMET DEPENDENCY"* ]]
     then
       echo "PASS: Repair successful. All node packages installed."
@@ -177,7 +172,7 @@ else
     fi
   fi
 
-  
+
   vagrant_check=$(grep MSB Vagrantfile | wc -l | xargs)
 
   if [ $vagrant_check == "4" ]
