@@ -10,6 +10,7 @@ $(document).ready(function() {
  */
 function initializePage() {
 	console.log("Javascript connected!");
+	$('.friend h3').click(nameClick);
 }
 
 function anagrammedName(name) {
@@ -43,4 +44,15 @@ function anagrammedName(name) {
 		console.log(name + " not known for anagramming.");
 		return name;
 	}
+}
+
+function nameClick(e) {
+  // Cancel the default action, which prevents the page from reloading
+    e.preventDefault();
+
+    // In an event listener, $(this) is the leement that fired the event
+    var name = $(this).text();
+    var newName = anagrammedName(name);
+    $(this).text(newName);
+
 }
